@@ -4,10 +4,10 @@
 
 const Store = {
   KEY: 'life-os-data',
-  VERSION: 2,
+  VERSION: 3,
 
   defaults() {
-    const startDate = '2026-05-27';
+    const startDate = '2026-06-01';
     return {
       version: this.VERSION,
       startDate,
@@ -25,6 +25,8 @@ const Store = {
         ],
         remittance: 190,
         exchangeRate: 25,
+        startingCapital: 14154,
+        firstPaymentDate: '2026-06-15',
         banks: {
           bac: 28.67,
           ficohsa: 0,

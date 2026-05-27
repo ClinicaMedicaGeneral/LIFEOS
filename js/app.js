@@ -398,21 +398,24 @@ function renderFinancial() {
     { label: 'Fin de mes (Último)', amount: 9404 }
   ];
 
-  // Build 3-month income calendar
-  const now = new Date();
+  // Build 3-month income calendar starting from June 2026
+  const planStart = new Date(APP.startDate);
   const months3 = [];
   for (let m = 0; m < 3; m++) {
-    const d = new Date(now.getFullYear(), now.getMonth() + m, 1);
+    const d = new Date(planStart.getFullYear(), planStart.getMonth() + m, 1);
     const monthName = d.toLocaleDateString('es-HN', { month: 'long', year: 'numeric' });
     const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+    const isFirstMonth = m === 0;
     months3.push({
       name: monthName.charAt(0).toUpperCase() + monthName.slice(1),
       entries: [
-        { date: `15`, label: schedule[0].label, amount: schedule[0].amount },
+        ...(isFirstMonth ? [{ date: '01', label: 'Capital inicial (Mayo)', amount: APP.financial.startingCapital || 0, highlight: true }] : []),
+        { date: '15', label: schedule[0].label, amount: schedule[0].amount },
         { date: `${lastDay}`, label: schedule[1].label, amount: schedule[1].amount },
         { date: `${lastDay}`, label: `Remesa ($${APP.financial.remittance})`, amount: remesaL }
       ],
-      total: schedule[0].amount + schedule[1].amount + remesaL
+      total: schedule[0].amount + schedule[1].amount + remesaL + (isFirstMonth ? (APP.financial.startingCapital || 0) : 0),
+      isFirstMonth
     });
   }
 
@@ -426,12 +429,25 @@ function renderFinancial() {
     ${totalDebt > income * 4 ? `<div class="alert alert-danger">⚠️ Ratio deuda/ingreso crítico. Deuda es ${(totalDebt / income).toFixed(1)}x tu ingreso mensual.</div>` : ''}
     ${APP.financial.personalDebts.some(p => !p.paid && new Date(p.dueDate) <= new Date(Date.now() + 7 * 86400000)) ? `<div class="alert alert-warning">⏰ Tienes pagos venciendo pronto. Revisa tus deudas personales.</div>` : ''}
 
+    <!-- Starting Capital Banner -->
+    ${APP.financial.startingCapital ? `
+    <div class="alert alert-info" style="margin-bottom:16px;">
+      💰 <strong>Capital Inicial (Último pago Mayo):</strong> ${Utils.formatL(APP.financial.startingCapital)}
+      (Salario L9,404 + Remesa $${APP.financial.remittance}) &mdash; Reservado como colchón mínimo.
+      <strong>Plan activo desde 01/Jun. Primer pago de deuda: 15/Jun.</strong>
+    </div>` : ''}
+
     <!-- Top Stats -->
-    <div class="grid-4" style="margin-bottom:24px;">
+    <div class="grid-5" style="margin-bottom:24px;">
       <div class="card">
-        <div class="card-title" style="margin-bottom:12px;">Ingreso Total</div>
+        <div class="card-title" style="margin-bottom:12px;">Ingreso Mensual</div>
         <div class="stat-value" style="color:var(--accent-emerald);">${Utils.formatL(income)}</div>
         <div class="stat-label">Salario + Remesas</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px;">Capital Inicial</div>
+        <div class="stat-value" style="color:var(--accent-cyan);">${Utils.formatL(APP.financial.startingCapital || 0)}</div>
+        <div class="stat-label">Colchón Mayo</div>
       </div>
       <div class="card">
         <div class="card-title" style="margin-bottom:12px;">Deuda Total</div>
@@ -439,14 +455,14 @@ function renderFinancial() {
         <div class="stat-change negative">${(totalDebt / income).toFixed(1)}x ingreso</div>
       </div>
       <div class="card">
-        <div class="card-title" style="margin-bottom:12px;">Disponible en Bancos</div>
+        <div class="card-title" style="margin-bottom:12px;">En Bancos</div>
         <div class="stat-value">${Utils.formatL(bankTotal)}</div>
         <div class="stat-label">BAC + Ficohsa + BanPaís</div>
       </div>
       <div class="card">
-        <div class="card-title" style="margin-bottom:12px;">Riesgo Financiero</div>
+        <div class="card-title" style="margin-bottom:12px;">Riesgo</div>
         <div class="stat-value" style="color:var(--accent-${riskColor});">${riskLevel}</div>
-        <div class="tag tag-${riskColor}" style="margin-top:8px;">Score: ${financialScore}/100</div>
+        <div class="tag tag-${riskColor}" style="margin-top:8px;">${financialScore}/100</div>
       </div>
     </div>
 
@@ -464,12 +480,12 @@ function renderFinancial() {
               <span class="mono" style="font-size:14px;font-weight:700;color:var(--accent-emerald);">${Utils.formatL(month.total)}</span>
             </div>
             ${month.entries.map(e => `
-              <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;">
-                <div style="color:var(--text-secondary);">
+              <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;${e.highlight ? 'background:rgba(6,182,212,0.08);margin:0 -8px;padding:6px 8px;border-radius:6px;' : ''}">
+                <div style="color:${e.highlight ? 'var(--accent-cyan)' : 'var(--text-secondary)'};">
                   <span class="mono" style="color:var(--text-muted);margin-right:8px;">Día ${e.date}</span>
-                  ${e.label}
+                  ${e.highlight ? '<strong>' : ''}${e.label}${e.highlight ? '</strong>' : ''}
                 </div>
-                <span class="mono" style="font-weight:600;">${Utils.formatL(e.amount)}</span>
+                <span class="mono" style="font-weight:600;${e.highlight ? 'color:var(--accent-cyan);' : ''}">${Utils.formatL(e.amount)}</span>
               </div>
             `).join('')}
           </div>
