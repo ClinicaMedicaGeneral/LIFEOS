@@ -44,6 +44,11 @@ function saveNow() {
    Cloud Sync Modal
    ═══════════════════════ */
 
+// Explicitly expose sync functions globally (needed for some mobile browsers)
+window.showSyncModal = showSyncModal;
+window.closeSyncModal = closeSyncModal;
+window.setupFirebase = setupFirebase;
+
 function showSyncModal() {
   // Remove existing modal if any
   const existing = document.getElementById('sync-modal');

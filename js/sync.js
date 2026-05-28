@@ -181,23 +181,25 @@ const Sync = {
 
   _updateUI() {
     const el = this._ensureWidget();
+    // Also update the floating sync button
+    this._updateFloatingBtn();
     if (!el) return;
 
     if (!this.configured) {
-      el.innerHTML = `
-        <button class="sync-btn sync-btn-setup" onclick="showSyncModal()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-          Activar Sync
-        </button>`;
+      el.innerHTML = `<button id="sync-setup-btn" class="sync-btn sync-btn-setup">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        Activar Sync
+      </button>`;
+      el.querySelector('#sync-setup-btn').addEventListener('click', () => window.showSyncModal());
       return;
     }
 
     if (!this.user) {
-      el.innerHTML = `
-        <button class="sync-btn sync-btn-login" onclick="Sync.signIn()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M3 21a9 9 0 0 1 18 0"/></svg>
-          Conectar con Google
-        </button>`;
+      el.innerHTML = `<button id="sync-login-btn" class="sync-btn sync-btn-login">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M3 21a9 9 0 0 1 18 0"/></svg>
+        Conectar con Google
+      </button>`;
+      el.querySelector('#sync-login-btn').addEventListener('click', () => Sync.signIn());
       return;
     }
 
@@ -207,24 +209,21 @@ const Sync = {
 
     el.innerHTML = `
       <div class="sync-user">
-        <img src="${this.user.photoURL || ''}" class="sync-avatar"
-             onerror="this.style.display='none'">
+        <img src="${this.user.photoURL || ''}" class="sync-avatar" onerror="this.style.display='none'">
         <div class="sync-info">
           <span class="sync-name">${(this.user.displayName || 'Usuario').split(' ')[0]}</span>
           <span class="sync-time ${this.syncing ? 'syncing' : ''}">
             ${this.syncing ? '⟳ Sincronizando...' : '✓ Sync ' + syncTime}
           </span>
         </div>
-        <button class="sync-action-btn"
-                onclick="Sync.push().then(ok => ok && showNotification('✅ Sincronizado','success'))"
-                title="Sincronizar ahora">
+        <button id="sync-push-btn" class="sync-action-btn" title="Sincronizar ahora">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polyline points="23 4 23 10 17 10"/>
             <polyline points="1 20 1 14 7 14"/>
             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
           </svg>
         </button>
-        <button class="sync-action-btn" onclick="Sync.signOut()" title="Cerrar sesión">
+        <button id="sync-logout-btn" class="sync-action-btn" title="Cerrar sesión">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
             <polyline points="16 17 21 12 16 7"/>
@@ -232,5 +231,51 @@ const Sync = {
           </svg>
         </button>
       </div>`;
+    el.querySelector('#sync-push-btn').addEventListener('click', () => {
+      Sync.push().then(ok => ok && window.showNotification('✅ Sincronizado', 'success'));
+    });
+    el.querySelector('#sync-logout-btn').addEventListener('click', () => Sync.signOut());
+  },
+
+  /* ── Floating Sync Button (always visible, top-right) ── */
+  _updateFloatingBtn() {
+    let btn = document.getElementById('sync-float-btn');
+    if (!btn) {
+      btn = document.createElement('button');
+      btn.id = 'sync-float-btn';
+      btn.title = 'Sincronización entre dispositivos';
+      btn.style.cssText = `
+        position:fixed; bottom:20px; right:20px; z-index:500;
+        width:44px; height:44px; border-radius:50%;
+        border:1px solid rgba(255,255,255,0.12);
+        background:#111119; color:#8888a0;
+        display:flex; align-items:center; justify-content:center;
+        cursor:pointer; font-size:18px;
+        box-shadow:0 4px 20px rgba(0,0,0,0.5);
+        transition:all 0.2s;`;
+      btn.addEventListener('click', () => {
+        if (!Sync.configured) { window.showSyncModal(); return; }
+        if (!Sync.user) { Sync.signIn(); return; }
+        Sync.push().then(ok => ok && window.showNotification('✅ Sincronizado', 'success'));
+      });
+      btn.addEventListener('mouseenter', () => { btn.style.background = '#1a1a25'; btn.style.color = '#f0f0f5'; });
+      btn.addEventListener('mouseleave', () => { btn.style.background = '#111119'; btn.style.color = '#8888a0'; });
+      document.body.appendChild(btn);
+    }
+
+    if (!this.configured) {
+      btn.innerHTML = '☁️';
+      btn.title = 'Activar Sync — clic para configurar';
+      btn.style.borderColor = 'rgba(168,85,247,0.4)';
+    } else if (!this.user) {
+      btn.innerHTML = '🔐';
+      btn.title = 'Conectar con Google';
+      btn.style.borderColor = 'rgba(6,182,212,0.4)';
+    } else {
+      btn.innerHTML = this.syncing ? '⟳' : '✓';
+      btn.style.color = this.syncing ? '#f59e0b' : '#10b981';
+      btn.style.borderColor = this.syncing ? 'rgba(245,158,11,0.4)' : 'rgba(16,185,129,0.4)';
+      btn.title = this.syncing ? 'Sincronizando...' : 'Sincronizado ✓ — clic para forzar sync';
+    }
   }
 };
