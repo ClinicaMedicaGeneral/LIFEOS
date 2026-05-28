@@ -770,6 +770,29 @@ function renderFinancial() {
       </div>
     </div>
 
+    <!-- Bank Accounts -->
+    <div class="card" style="margin-bottom:24px;">
+      <div class="card-header">
+        <span class="card-title">🏦 Cuentas de Banco</span>
+        <span class="tag tag-cyan">${Utils.formatL(bankTotal)}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        ${[
+          { key: 'bac',     name: 'BAC' },
+          { key: 'ficohsa', name: 'Ficohsa' },
+          { key: 'banpais', name: 'BanPaís' }
+        ].map(b => `
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span style="font-weight:600;min-width:70px;">${b.name}</span>
+            <input type="number" id="bank-${b.key}" class="input" value="${APP.financial.banks[b.key]}" step="0.01" min="0"
+              style="width:130px;flex:none;" onkeydown="if(event.key==='Enter')updateBankBalance('${b.key}')">
+            <button class="btn btn-sm btn-ghost" onclick="updateBankBalance('${b.key}')">Actualizar</button>
+            <span class="mono" style="margin-left:auto;font-size:14px;font-weight:700;color:var(--accent-cyan);">${Utils.formatL(APP.financial.banks[b.key])}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
     <!-- Debt Breakdown -->
     <div class="grid-2" style="margin-bottom:24px;">
       <div class="card">
@@ -785,9 +808,12 @@ function renderFinancial() {
                 <div class="debt-name">${cc.name}</div>
                 <div class="debt-detail">${cc.cashPending ? 'Contado pendiente: ' + Utils.formatL(cc.cashPending) : ''}</div>
               </div>
-              <div>
+              <div style="text-align:right;">
                 <div class="debt-amount">${Utils.formatL(Math.max(0, cc.balance - cc.paid))}</div>
-                <button class="btn btn-sm btn-ghost" style="margin-top:4px;" onclick="payDebt('cc','${cc.id}')">Pagar</button>
+                <div style="display:flex;gap:4px;margin-top:4px;justify-content:flex-end;">
+                  <button class="btn btn-sm btn-ghost" onclick="payDebt('cc','${cc.id}')">Pagar</button>
+                  <button class="btn btn-sm btn-ghost" style="color:var(--accent-red);border-color:rgba(239,68,68,0.3);" onclick="addCardCharge('${cc.id}')">+ Gasto</button>
+                </div>
               </div>
             </div>
           `).join('')}
@@ -926,6 +952,30 @@ function updateExchangeRate() {
   saveNow();
   renderFinancial();
   showNotification(`Tipo de cambio actualizado a L${val} por $1`, 'success');
+}
+
+function updateBankBalance(bankKey) {
+  const names = { bac: 'BAC', ficohsa: 'Ficohsa', banpais: 'BanPaís' };
+  const input = document.getElementById('bank-' + bankKey);
+  if (!input) return;
+  const val = parseFloat(input.value);
+  if (isNaN(val) || val < 0) return showNotification('Monto inválido', 'error');
+  APP.financial.banks[bankKey] = val;
+  saveNow();
+  renderFinancial();
+  showNotification(`${names[bankKey]}: saldo actualizado a ${Utils.formatL(val)}`, 'success');
+}
+
+function addCardCharge(ccId) {
+  const card = APP.financial.creditCards.find(c => c.id === ccId);
+  if (!card) return;
+  const amount = prompt(`Agregar gasto a ${card.name}\n¿Cuánto? (en Lempiras)`);
+  if (!amount || isNaN(amount) || parseFloat(amount) <= 0) return;
+  const val = parseFloat(amount);
+  card.balance += val;
+  saveNow();
+  renderFinancial();
+  showNotification(`Gasto de ${Utils.formatL(val)} agregado a ${card.name}`, 'info');
 }
 
 function payDebt(type, id) {
