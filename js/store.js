@@ -4,7 +4,7 @@
 
 const Store = {
   KEY: 'life-os-data',
-  VERSION: 5,
+  VERSION: 6,
 
   defaults() {
     const startDate = '2026-06-01';
@@ -46,7 +46,6 @@ const Store = {
           { id: 'ef-5', name: 'Conecta Extra #2', payment: 811.20, total: 3244.80, remaining: 4, paid: 0, currency: 'L' },
           { id: 'ef-6', name: 'BanPaís Edu Extra #1', payment: 602.77, total: 2760.54, remaining: 4, paid: 0, currency: 'L' },
           { id: 'ef-7', name: 'BanPaís Edu Extra #2', payment: 290.83, total: 3829.17, remaining: 16, paid: 0, currency: 'L' },
-          { id: 'ef-8', name: 'BanPaís Mensual', payment: 893.60, total: 6589.71, remaining: 8, paid: 0, currency: 'L' },
           { id: 'ef-9', name: 'Deuda Laboral Walmart', payment: 1000.26, total: 24006.24, remaining: 24, paid: 0, currency: 'L', noInterest: true }
         ],
         personalDebts: [
