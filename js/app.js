@@ -399,7 +399,8 @@ function renderFinancial() {
   ];
 
   // Build 3-month income calendar starting from June 2026
-  const planStart = new Date(APP.startDate);
+  const [sy, sm, sd] = APP.startDate.split('-').map(Number);
+  const planStart = new Date(sy, sm - 1, sd);
   const months3 = [];
   for (let m = 0; m < 3; m++) {
     const d = new Date(planStart.getFullYear(), planStart.getMonth() + m, 1);

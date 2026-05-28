@@ -4,7 +4,7 @@
 
 const Store = {
   KEY: 'life-os-data',
-  VERSION: 3,
+  VERSION: 4,
 
   defaults() {
     const startDate = '2026-06-01';
@@ -150,7 +150,7 @@ const Store = {
 
     // Keep profile progress
     if (oldData.profile) Object.assign(merged.profile, oldData.profile);
-    if (oldData.startDate) merged.startDate = oldData.startDate;
+    // Always use the latest startDate from defaults (plan date may change)
 
     // Keep financial progress but add missing entries
     if (oldData.financial) {
