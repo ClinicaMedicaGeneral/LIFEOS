@@ -1002,21 +1002,31 @@ function renderGoals() {
         <span class="tag tag-purple">${APP.goals.learning.totalHours.toFixed(1)}h estudiadas</span>
       </div>
       <div style="display:flex;flex-direction:column;gap:16px;">
-        ${APP.goals.learning.courses.map(c => `
+        ${APP.goals.learning.courses.map(c => {
+          const unit = c.unit || 'módulos';
+          const isSessions = c.unit === 'sesiones';
+          const pct = Math.min(100, (c.completedModules / c.totalModules) * 100);
+          const examBadge = c.examCost ? `<span class="tag tag-amber" style="font-size:10px;padding:2px 7px;">Examen $${c.examCost}</span>` : '';
+          const unitLabel = isSessions ? `${c.completedModules}/${c.totalModules} sesiones (1h c/u)` : `${c.completedModules}/${c.totalModules} ${unit}`;
+          const btnLabel = isSessions ? '🍅 Registrar Sesión' : 'Completar Módulo';
+          return `
           <div style="padding:16px;background:var(--bg-secondary);border-radius:var(--radius-md);border:1px solid var(--border-subtle);">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-              <span style="font-weight:600;">${c.name}</span>
-              <span class="mono" style="font-size:13px;color:var(--accent-purple);">${c.completedModules}/${c.totalModules} módulos</span>
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;gap:8px;flex-wrap:wrap;">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <span style="font-weight:600;">${c.name}</span>
+                ${examBadge}
+              </div>
+              <span class="mono" style="font-size:13px;color:var(--accent-purple);white-space:nowrap;">${unitLabel}</span>
             </div>
             <div class="progress-bar">
-              <div class="progress-fill purple" style="width:${(c.completedModules / c.totalModules) * 100}%"></div>
+              <div class="progress-fill purple" style="width:${pct}%"></div>
             </div>
             <div style="display:flex;justify-content:space-between;margin-top:8px;">
               <span style="font-size:12px;color:var(--text-muted);">${c.hoursStudied.toFixed(1)}h invertidas</span>
-              <button class="btn btn-sm btn-ghost" onclick="advanceCourse('${c.id}')">Completar Módulo</button>
+              <button class="btn btn-sm btn-ghost" onclick="advanceCourse('${c.id}')">${btnLabel}</button>
             </div>
-          </div>
-        `).join('')}
+          </div>`;
+        }).join('')}
         <div style="display:flex;gap:8px;">
           <button class="btn btn-ghost" onclick="logStudyTime()">Registrar Horas de Estudio</button>
         </div>
@@ -1242,30 +1252,38 @@ function toggleImageCheck(item) {
 
 function advanceCourse(courseId) {
   const course = APP.goals.learning.courses.find(c => c.id === courseId);
-  if (course && course.completedModules < course.totalModules) {
+  if (!course) return;
+  const isSessions = course.unit === 'sesiones';
+  if (course.completedModules < course.totalModules || isSessions) {
     course.completedModules++;
+    if (isSessions) {
+      // Each pomodoro session = 1 hour
+      course.hoursStudied += 1;
+      APP.goals.learning.totalHours += 1;
+    }
     XP.award(APP, 'STUDY_HOUR');
     saveNow();
     renderGoals();
     renderSidebar();
-    showNotification(`Módulo completado en ${course.name}`, 'success');
+    const unit = isSessions ? 'sesión' : 'módulo';
+    showNotification(`✅ ${unit.charAt(0).toUpperCase() + unit.slice(1)} completad${isSessions ? 'a' : 'o'} en ${course.name}`, 'success');
   }
 }
 
 function logStudyTime() {
   const hours = prompt('¿Cuántas horas estudiaste? (ej: 1.5)');
-  if (hours && !isNaN(hours)) {
-    const h = parseFloat(hours);
-    APP.goals.learning.totalHours += h;
-    const courseId = prompt('¿En cuál curso? (google-pm, fb-community, html-mobile)');
-    const course = APP.goals.learning.courses.find(c => c.id === courseId);
-    if (course) course.hoursStudied += h;
-    for (let i = 0; i < Math.floor(h); i++) XP.award(APP, 'STUDY_HOUR');
-    saveNow();
-    renderGoals();
-    renderSidebar();
-    showNotification(`${h}h de estudio registradas`, 'success');
-  }
+  if (!hours || isNaN(hours)) return;
+  const h = parseFloat(hours);
+  APP.goals.learning.totalHours += h;
+  const courseNames = APP.goals.learning.courses.map((c, i) => `${i + 1}. ${c.name}`).join('\n');
+  const idx = parseInt(prompt('¿En cuál curso?\n' + courseNames + '\n\nEscribe el número:')) - 1;
+  const course = APP.goals.learning.courses[idx];
+  if (course) course.hoursStudied += h;
+  for (let i = 0; i < Math.floor(h); i++) XP.award(APP, 'STUDY_HOUR');
+  saveNow();
+  renderGoals();
+  renderSidebar();
+  showNotification(`${h}h de estudio registradas`, 'success');
 }
 
 /* ═══════════════════════

@@ -4,7 +4,7 @@
 
 const Store = {
   KEY: 'life-os-data',
-  VERSION: 7,
+  VERSION: 8,
 
   defaults() {
     const startDate = '2026-06-01';
@@ -91,9 +91,9 @@ const Store = {
         learning: {
           name: 'Aprendizaje Continuo',
           courses: [
-            { id: 'google-pm', name: 'Google Project Management', totalModules: 6, completedModules: 0, hoursStudied: 0 },
-            { id: 'fb-community', name: 'Facebook Community Management', totalModules: 5, completedModules: 0, hoursStudied: 0 },
-            { id: 'html-mobile', name: 'HTML desde Celular', totalModules: 8, completedModules: 0, hoursStudied: 0 }
+            { id: 'google-pm', name: 'Google Project Management', totalModules: 7, completedModules: 0, hoursStudied: 0 },
+            { id: 'fb-community', name: 'Meta Blueprint Community Management', totalModules: 5, completedModules: 0, hoursStudied: 0, examCost: 40 },
+            { id: 'html-mobile', name: 'HTML desde Celular', totalModules: 20, completedModules: 0, hoursStudied: 0, unit: 'sesiones' }
           ],
           totalHours: 0
         },
