@@ -417,10 +417,7 @@ function renderDashboard() {
       <div class="card-header"><span class="card-title">Acciones Rápidas de Hoy</span></div>
       <div class="grid-3">
         <button class="btn btn-primary" onclick="quickAction('cleanDay')" style="width:100%;justify-content:center;">
-          ✓ Día Limpio (Sobredad)
-        </button>
-        <button class="btn btn-primary" onclick="quickAction('cleanDayPorn')" style="width:100%;justify-content:center;">
-          ✓ Día Limpio (Pornografía)
+          💨 Día Limpio (Vape)
         </button>
         <button class="btn btn-primary" onclick="quickAction('workout')" style="width:100%;justify-content:center;">
           💪 Registrar Entrenamiento
@@ -1356,7 +1353,7 @@ function renderHabits() {
     { id: 'workout', label: 'Entrenamiento del día', icon: '💪' },
     { id: 'deep-work', label: '3h de Deep Work CMG', icon: '🎯' },
     { id: 'study', label: 'Sesión de estudio', icon: '📚' },
-    { id: 'clean', label: 'Día limpio (sustancias)', icon: '🌿' },
+    { id: 'clean', label: 'Día limpio (vape)', icon: '💨' },
     { id: 'image', label: 'Imagen personal cuidada', icon: '✨' },
     { id: 'no-scroll', label: 'Sin scroll infinito', icon: '📵' },
     { id: 'sleep-early', label: 'Dormir antes de 22:30', icon: '😴' }
