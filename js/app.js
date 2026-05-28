@@ -933,7 +933,7 @@ function renderFinancial() {
     </div>
   `;
 
-  renderFlowChart(income, monthlyEFPayments, totalCC, availableAfterEF);
+  renderFlowChart(income, monthlyEFPayments, totalCC, bankTotal);
 }
 
 function updateRemittance() {
@@ -1055,7 +1055,7 @@ function renderFlowChart(income, efPayments, ccDebt, available) {
     data: {
       labels: ['Ingreso', 'Cuotas Fijas', 'Tarjetas', 'Disponible'],
       datasets: [{
-        data: [income, efPayments, ccDebt, Math.max(0, available - ccDebt * 0.1)],
+        data: [income, efPayments, ccDebt, available],
         backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#6366f1'],
         borderRadius: 8,
         borderSkipped: false
