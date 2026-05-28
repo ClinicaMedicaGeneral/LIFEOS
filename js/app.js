@@ -20,6 +20,8 @@ function initApp() {
   renderSidebar();
   navigateTo('dashboard');
   startAutoSave();
+  // Initialize Firebase sync if previously configured
+  Sync.init();
 }
 
 function getInitialDebt() {
@@ -27,11 +29,70 @@ function getInitialDebt() {
 }
 
 function startAutoSave() {
-  setInterval(() => Store.save(APP), 30000);
+  setInterval(() => {
+    Store.save(APP);
+    Sync.push(); // also push to cloud silently
+  }, 30000);
 }
 
 function saveNow() {
   Store.save(APP);
+  Sync.push();
+}
+
+/* ═══════════════════════
+   Cloud Sync Modal
+   ═══════════════════════ */
+
+function showSyncModal() {
+  const modal = document.getElementById('sync-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+    document.getElementById('firebase-config-error').textContent = '';
+  }
+}
+
+function closeSyncModal() {
+  const modal = document.getElementById('sync-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function setupFirebase() {
+  const raw = document.getElementById('firebase-config-input').value.trim();
+  const errEl = document.getElementById('firebase-config-error');
+  errEl.textContent = '';
+
+  try {
+    // Extract the JSON object from the pasted text (handles both raw JSON and JS variable syntax)
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('No se encontró un objeto de configuración válido');
+
+    // Normalize: quote bare keys, replace single quotes
+    const jsonStr = match[0]
+      .replace(/([{,]\s*)([a-zA-Z_]\w*)(\s*:)/g, '$1"$2"$3')
+      .replace(/'/g, '"');
+
+    const config = JSON.parse(jsonStr);
+    if (!config.apiKey)     throw new Error('Falta apiKey');
+    if (!config.projectId)  throw new Error('Falta projectId');
+    if (!config.authDomain) throw new Error('Falta authDomain');
+
+    const btn = document.querySelector('#sync-modal .btn-primary');
+    if (btn) { btn.textContent = '⏳ Conectando...'; btn.disabled = true; }
+
+    Sync.init(config).then(ok => {
+      if (btn) { btn.textContent = '🔥 Conectar Firebase'; btn.disabled = false; }
+      if (ok) {
+        closeSyncModal();
+        showNotification('🔥 Firebase listo. Iniciando sesión con Google...', 'success');
+        setTimeout(() => Sync.signIn(), 800);
+      } else {
+        errEl.textContent = 'Error: No se pudo inicializar Firebase. Verifica la configuración.';
+      }
+    });
+  } catch (e) {
+    errEl.textContent = 'Error: ' + e.message;
+  }
 }
 
 /* ═══════════════════════

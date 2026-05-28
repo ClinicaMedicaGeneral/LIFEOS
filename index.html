@@ -72,7 +72,97 @@
 
     <!-- XP Bar -->
     <div class="sidebar-xp" id="sidebar-xp"></div>
+
+    <!-- Cloud Sync Widget -->
+    <div class="sync-section">
+      <div class="nav-section-title">Sincronización</div>
+      <div id="sync-widget">
+        <button class="sync-btn sync-btn-setup" onclick="showSyncModal()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          Activar Sync
+        </button>
+      </div>
+    </div>
   </aside>
+
+  <!-- ═══ SYNC SETUP MODAL ═══ -->
+  <div id="sync-modal" class="modal-overlay" style="display:none;" onclick="if(event.target===this)closeSyncModal()">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>☁️ Sincronización entre dispositivos</h3>
+        <button class="modal-close" onclick="closeSyncModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="color:var(--text-secondary);margin-bottom:20px;font-size:13px;line-height:1.6;">
+          Sincroniza tu progreso entre celular y computadora gratis con Firebase de Google.
+          Solo necesitas una cuenta de Google.
+        </p>
+
+        <div class="step-list">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div>
+              <strong>Crear proyecto Firebase</strong><br>
+              Ve a <a href="https://console.firebase.google.com" target="_blank" class="link-cyan">console.firebase.google.com</a>
+              → <em>Crear un proyecto</em> → ponle un nombre (ej: life-os) → Continuar sin Analytics → Crear
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div>
+              <strong>Activar inicio de sesión con Google</strong><br>
+              En el menú izquierdo: <em>Build → Authentication → Comenzar → Sign-in method → Google → Habilitar</em>
+              → selecciona tu correo de soporte → Guardar
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div>
+              <strong>Crear base de datos Firestore</strong><br>
+              <em>Build → Firestore Database → Crear base de datos → Iniciar en modo de prueba → Siguiente → Habilitar</em>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">4</div>
+            <div>
+              <strong>Registrar tu app web</strong><br>
+              <em>⚙️ Configuración del proyecto → Tus apps → icono Web (&lt;/&gt;) → Registra la app</em>
+              (nombre: life-os) → <strong>Copia el objeto <code>firebaseConfig</code></strong>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">5</div>
+            <div>
+              <strong>Agregar dominio autorizado</strong><br>
+              <em>Authentication → Settings → Dominios autorizados → Agregar dominio</em>
+              → escribe: <code>clinicamedicageneral.github.io</code> → Agregar
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;">
+          <label class="input-label">Pega aquí tu <code>firebaseConfig</code></label>
+          <textarea id="firebase-config-input" class="input" rows="9"
+            style="font-family:'JetBrains Mono',monospace;font-size:12px;resize:vertical;"
+            placeholder='const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  authDomain: "tu-proyecto.firebaseapp.com",
+  projectId: "tu-proyecto",
+  storageBucket: "tu-proyecto.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abc123"
+};'></textarea>
+          <div id="firebase-config-error" style="color:var(--accent-red);font-size:12px;margin-top:6px;min-height:18px;"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeSyncModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="setupFirebase()">
+          🔥 Conectar Firebase
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- ═══ MAIN CONTENT ═══ -->
   <main class="main-content">
@@ -102,10 +192,16 @@
 
 </div>
 
-<!-- Scripts -->
-<script src="js/store.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/app.js"></script>
+<!-- Firebase SDK (compat v10) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<!-- App Scripts -->
+<script src="js/store.js?v=5"></script>
+<script src="js/utils.js?v=5"></script>
+<script src="js/sync.js?v=5"></script>
+<script src="js/app.js?v=5"></script>
 
 </body>
 </html>
