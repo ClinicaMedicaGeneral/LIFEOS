@@ -4,7 +4,7 @@
 
 const Store = {
   KEY: 'life-os-data',
-  VERSION: 6,
+  VERSION: 7,
 
   defaults() {
     const startDate = '2026-06-01';
@@ -34,18 +34,18 @@ const Store = {
         },
         creditCards: [
           { id: 'tc-walmart', name: 'TC Walmart 5758', balance: 6313.49, paid: 0, minPayment: 0 },
-          { id: 'tc-conecta', name: 'TC Conecta 5213', balance: 3537.15, paid: 0, minPayment: 0 },
-          { id: 'tc-banpais-clasica', name: 'TC BanPaís Clásica', balance: 1962.40, paid: 0, minPayment: 0 },
-          { id: 'tc-banpais-edu', name: 'TC BanPaís Educación', balance: 9676.35, paid: 0, minPayment: 0, cashPending: 4634.15 }
+          { id: 'tc-conecta', name: 'TC Conecta 5213', balance: 4887.37, paid: 0, minPayment: 0 },
+          { id: 'tc-banpais-clasica', name: 'TC BanPaís Clásica', balance: 3208.84, paid: 0, minPayment: 0 },
+          { id: 'tc-banpais-edu', name: 'TC BanPaís Educación', balance: 9992.03, paid: 0, minPayment: 0, cashPending: 4634.15 }
         ],
         extraFinancing: [
-          { id: 'ef-1', name: 'Walmart Extra #1', payment: 878.33, total: 7026.64, remaining: 8, paid: 0, currency: 'L' },
-          { id: 'ef-2', name: 'Walmart Extra #2', payment: 512.75, total: 2051.00, remaining: 4, paid: 0, currency: 'L', originalUSD: true, usdPayment: 20.51, usdTotal: 82.04 },
+          { id: 'ef-1', name: 'Walmart Extra #1', payment: 878.33, total: 7026.64, remaining: 8, paid: 0, currency: 'L', noInterest: true },
+          { id: 'ef-2', name: 'Walmart Extra #2', payment: 512.75, total: 2051.00, remaining: 4, paid: 0, currency: 'L', noInterest: true, originalUSD: true, usdPayment: 20.51, usdTotal: 82.04 },
           { id: 'ef-3', name: 'Walmart Extra #3 (Grande)', payment: 4007.30, total: 45921.11, remaining: 15, paid: 0, currency: 'L', noInterest: true },
-          { id: 'ef-4', name: 'Conecta Extra #1', payment: 677.06, total: 5416.48, remaining: 8, paid: 0, currency: 'L' },
-          { id: 'ef-5', name: 'Conecta Extra #2', payment: 811.20, total: 3244.80, remaining: 4, paid: 0, currency: 'L' },
-          { id: 'ef-6', name: 'BanPaís Edu Extra #1', payment: 602.77, total: 2760.54, remaining: 4, paid: 0, currency: 'L' },
-          { id: 'ef-7', name: 'BanPaís Edu Extra #2', payment: 290.83, total: 3829.17, remaining: 16, paid: 0, currency: 'L' },
+          { id: 'ef-4', name: 'Conecta Extra #1', payment: 677.06, total: 5416.48, remaining: 8, paid: 0, currency: 'L', noInterest: true },
+          { id: 'ef-5', name: 'Conecta Extra #2', payment: 811.20, total: 3244.80, remaining: 4, paid: 0, currency: 'L', noInterest: true },
+          { id: 'ef-6', name: 'BanPaís Edu Extra #1', payment: 602.77, total: 2760.54, remaining: 4, paid: 0, currency: 'L', noInterest: true },
+          { id: 'ef-7', name: 'BanPaís Edu Extra #2', payment: 290.83, total: 3829.17, remaining: 16, paid: 0, currency: 'L', noInterest: true },
           { id: 'ef-9', name: 'Deuda Laboral Walmart', payment: 1000.26, total: 24006.24, remaining: 24, paid: 0, currency: 'L', noInterest: true }
         ],
         personalDebts: [
