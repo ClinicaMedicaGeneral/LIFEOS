@@ -983,7 +983,7 @@ function renderGoals() {
 
     <!-- Sobriety Trackers -->
     <div class="grid-2" style="margin-bottom:24px;">
-      ${renderSobrietyCard('sobriety', 'Dejar Marihuana', '🌿', APP.goals.sobriety)}
+      ${renderSobrietyCard('sobriety', 'Dejar Vape', '💨', APP.goals.sobriety)}
       ${renderSobrietyCard('noPorn', 'Dejar Pornografía', '🛡️', APP.goals.noPorn)}
     </div>
 
@@ -1702,7 +1702,7 @@ function renderPlan() {
         </thead>
         <tbody>
           ${[
-            ['Días limpio (marihuana)', '14', '45', '80+', APP.goals.sobriety.currentStreak],
+            ['Días limpio (vape)', '14', '45', '80+', APP.goals.sobriety.currentStreak],
             ['Días limpio (pornografía)', '14', '45', '80+', APP.goals.noPorn.currentStreak],
             ['Deudas eliminadas', '2', '4', '6+', countPaidDebts()],
             ['Sesiones de gym/semana', '3', '4', '4-5', getCurrentWeekSessions()],

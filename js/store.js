@@ -65,7 +65,7 @@ const Store = {
       },
       goals: {
         sobriety: {
-          name: 'Dejar Marihuana',
+          name: 'Dejar Vape',
           startDate,
           cleanDays: [],
           relapses: [],
