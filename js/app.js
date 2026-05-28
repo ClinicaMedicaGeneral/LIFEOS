@@ -4,6 +4,7 @@
 
 let APP = {};
 let charts = {};
+let _appUIReady = false;
 
 document.addEventListener('DOMContentLoaded', () => {
   APP = Store.load();
@@ -11,18 +12,75 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initApp() {
-  // Calculate and lock initial debt on first load
   if (!APP.financial.initialDebt) {
     APP.financial.initialDebt = ModeEngine.getTotalDebt(APP);
     Store.save(APP);
   }
+  // Always show lock screen first — app renders only after auth
+  showLockScreen();
+  Sync.init();
+}
+
+// Called by Sync once authentication is confirmed
+function initAppUI() {
+  if (_appUIReady) return;
+  _appUIReady = true;
   updateMode();
   renderSidebar();
   navigateTo('dashboard');
   startAutoSave();
-  // Initialize Firebase sync if previously configured
-  Sync.init();
 }
+window.initAppUI = initAppUI;
+
+/* ── Lock Screen ── */
+function showLockScreen() {
+  const layout = document.querySelector('.app-layout');
+  const toggle = document.querySelector('.mobile-toggle');
+  const floatBtn = document.getElementById('sync-float-btn');
+  if (layout) layout.style.display = 'none';
+  if (toggle) toggle.style.display = 'none';
+  if (floatBtn) floatBtn.style.display = 'none';
+
+  const existing = document.getElementById('lock-screen');
+  if (existing) existing.remove();
+
+  const configured = typeof Sync !== 'undefined' && Sync.configured;
+  const lock = document.createElement('div');
+  lock.id = 'lock-screen';
+  lock.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0a0f;z-index:10000;display:flex;align-items:center;justify-content:center;font-family:inherit;';
+
+  const btnHTML = configured
+    ? '<button id="lock-signin-btn" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#a855f7,#6366f1);color:#fff;font-size:14px;font-weight:600;cursor:pointer;letter-spacing:0.2px;">Iniciar sesión con Google</button>'
+    : '<button id="lock-setup-btn" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#a855f7,#6366f1);color:#fff;font-size:14px;font-weight:600;cursor:pointer;">Configurar acceso</button>';
+
+  lock.innerHTML = '<div style="text-align:center;max-width:300px;width:90%;padding:20px;">'
+    + '<div style="font-size:54px;margin-bottom:16px;">🔐</div>'
+    + '<div style="font-size:26px;font-weight:800;color:#f0f0f5;letter-spacing:-0.5px;">LIFE OS</div>'
+    + '<div style="font-size:11px;color:#55556a;margin-top:6px;margin-bottom:28px;text-transform:uppercase;letter-spacing:2px;">Acceso Privado</div>'
+    + '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:24px;">'
+    + '<p style="font-size:13px;color:#8888a0;margin:0 0 20px;line-height:1.6;">Este sistema es personal y privado.<br>Identifícate para continuar.</p>'
+    + btnHTML
+    + '</div></div>';
+
+  document.body.appendChild(lock);
+
+  const signinBtn = document.getElementById('lock-signin-btn');
+  if (signinBtn) signinBtn.addEventListener('click', function() { Sync.signIn(); });
+  const setupBtn = document.getElementById('lock-setup-btn');
+  if (setupBtn) setupBtn.addEventListener('click', function() { showSyncModal(); });
+}
+window.showLockScreen = showLockScreen;
+
+function hideLockScreen() {
+  const lock = document.getElementById('lock-screen');
+  if (lock) lock.remove();
+  const layout = document.querySelector('.app-layout');
+  const toggle = document.querySelector('.mobile-toggle');
+  if (layout) layout.style.display = '';
+  if (toggle) toggle.style.display = '';
+  // Floating sync button will be restored by Sync._updateFloatingBtn()
+}
+window.hideLockScreen = hideLockScreen;
 
 function getInitialDebt() {
   return APP.financial.initialDebt || ModeEngine.getTotalDebt(APP);

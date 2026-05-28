@@ -78,7 +78,7 @@ const Sync = {
     } catch(e) {}
     this.user = null;
     this._updateUI();
-    showNotification('Sesión cerrada. Usando datos locales.', 'info');
+    if (typeof window.showLockScreen === 'function') window.showLockScreen();
   },
 
   /* ── Cloud Push (local → cloud) ── */
@@ -129,6 +129,10 @@ const Sync = {
   async _onAuthChange(user) {
     this.user = user;
     if (user) {
+      // Unlock and render UI first
+      if (typeof window.initAppUI === 'function') window.initAppUI();
+      if (typeof window.hideLockScreen === 'function') window.hideLockScreen();
+
       showNotification(`✅ Conectado como ${user.displayName}`, 'success');
       const cloudData = await this.pull();
 
@@ -138,27 +142,26 @@ const Sync = {
         const localJournal  = APP.journal?.length || 0;
         const cloudJournal  = cloudData.journal?.length || 0;
 
-        // Pick the "more advanced" dataset by XP + journal entries
         const localScore = localXP + localJournal * 5;
         const cloudScore = cloudXP + cloudJournal * 5;
 
         if (cloudScore > localScore) {
-          // Cloud is ahead → load cloud
           APP = Store.migrate(cloudData);
           Store.save(APP);
           const current = document.querySelector('.nav-item.active')?.dataset?.nav || 'dashboard';
           navigateTo(current);
           showNotification('☁️ Datos sincronizados desde la nube ✓', 'success');
         } else {
-          // Local is ahead or equal → push local
           await this.push();
           showNotification('☁️ Datos locales guardados en la nube ✓', 'info');
         }
       } else {
-        // First time: upload local data
         await this.push();
         showNotification('☁️ Backup inicial creado en la nube ✓', 'success');
       }
+    } else {
+      // Not authenticated — show lock screen
+      if (typeof window.showLockScreen === 'function') window.showLockScreen();
     }
     this._updateUI();
   },
