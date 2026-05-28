@@ -26,7 +26,11 @@ const Sync = {
   /* ── Initialize Firebase ── */
   async init(config) {
     config = config || this.getStoredConfig();
-    if (!config || !config.apiKey) return false;
+    if (!config || !config.apiKey) {
+      // Still render the widget so the "Activar Sync" button shows
+      setTimeout(() => this._updateUI(), 100);
+      return false;
+    }
 
     try {
       if (typeof firebase === 'undefined') {
@@ -160,8 +164,23 @@ const Sync = {
   },
 
   /* ── UI Update ── */
+  _ensureWidget() {
+    let el = document.getElementById('sync-widget');
+    if (el) return el;
+    // Create sync section dynamically if HTML doesn't have it
+    const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) return null;
+    const section = document.createElement('div');
+    section.style.cssText = 'margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06);';
+    section.innerHTML = `
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#55556a;padding:0 4px;margin-bottom:8px;font-weight:600;">Sincronización</div>
+      <div id="sync-widget"></div>`;
+    sidebar.appendChild(section);
+    return document.getElementById('sync-widget');
+  },
+
   _updateUI() {
-    const el = document.getElementById('sync-widget');
+    const el = this._ensureWidget();
     if (!el) return;
 
     if (!this.configured) {
