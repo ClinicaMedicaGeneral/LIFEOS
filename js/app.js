@@ -50,65 +50,73 @@ window.closeSyncModal = closeSyncModal;
 window.setupFirebase = setupFirebase;
 
 function showSyncModal() {
-  // ── Diagnostic: flash banner to confirm function was called ──
-  const diag = document.createElement('div');
-  diag.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#a855f7;color:white;padding:14px;z-index:99999;text-align:center;font-size:15px;font-weight:600;';
-  diag.textContent = '✅ Abriendo configuración de Sync...';
-  document.body.appendChild(diag);
-  setTimeout(() => diag.remove(), 2500);
-
   // Remove existing modal if any
   const existing = document.getElementById('sync-modal');
   if (existing) existing.remove();
 
-  // Build modal dynamically so it works even without the HTML element
-  const modal = document.createElement('div');
-  modal.id = 'sync-modal';
-  modal.className = 'modal-overlay';
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(6px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
-  modal.innerHTML = `
-    <div style="background:#111119;border:1px solid rgba(255,255,255,0.08);border-radius:20px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 30px 60px rgba(0,0,0,0.7);">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px 16px;border-bottom:1px solid rgba(255,255,255,0.06);">
-        <h3 style="font-size:16px;font-weight:700;">☁️ Sincronización entre dispositivos</h3>
-        <button onclick="closeSyncModal()" style="background:none;border:none;color:#55556a;cursor:pointer;font-size:18px;padding:4px 8px;border-radius:6px;">✕</button>
-      </div>
-      <div style="padding:20px 24px;">
-        <p style="color:#8888a0;font-size:13px;line-height:1.6;margin-bottom:20px;">
-          Sincroniza tu progreso entre celular y computadora gratis con Firebase de Google.
-        </p>
-        <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px;">
-          ${[
-            ['Crear proyecto Firebase','Ve a <a href="https://console.firebase.google.com" target="_blank" style="color:#06b6d4;">console.firebase.google.com</a> → Crear proyecto → Nombre: life-os → Crear'],
-            ['Activar Google Auth','Build → Authentication → Comenzar → Sign-in method → Google → Habilitar → Guardar'],
-            ['Crear Firestore','Build → Firestore Database → Crear base de datos → Modo de prueba → Habilitar'],
-            ['Obtener config','⚙️ Configuración del proyecto → Tus apps → icono Web → Registrar app → copia el <code style="background:#0d0d14;padding:1px 5px;border-radius:4px;color:#f59e0b;font-size:11px;">firebaseConfig</code>'],
-            ['Autorizar dominio','Authentication → Settings → Dominios autorizados → Agregar → <code style="background:#0d0d14;padding:1px 5px;border-radius:4px;color:#f59e0b;font-size:11px;">clinicamedicageneral.github.io</code>']
-          ].map(([title, desc], i) => `
-            <div style="display:flex;gap:12px;align-items:flex-start;">
-              <div style="min-width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#a855f7,#6366f1);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px;">${i+1}</div>
-              <div style="font-size:12px;color:#8888a0;line-height:1.6;"><strong style="color:#f0f0f5;">${title}</strong><br>${desc}</div>
-            </div>`).join('')}
-        </div>
-        <label style="display:block;font-size:12px;color:#8888a0;margin-bottom:8px;">Pega aquí tu <code style="background:#0d0d14;padding:1px 5px;border-radius:4px;color:#f59e0b;font-size:11px;">firebaseConfig</code></label>
-        <textarea id="firebase-config-input" rows="9"
-          style="width:100%;background:#0d0d14;border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#f0f0f5;padding:12px;font-family:monospace;font-size:12px;resize:vertical;box-sizing:border-box;outline:none;"
-          placeholder='const firebaseConfig = {
-  apiKey: "AIzaSy...",
-  authDomain: "tu-proyecto.firebaseapp.com",
-  projectId: "tu-proyecto",
-  storageBucket: "tu-proyecto.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abc123"
-};'></textarea>
-        <div id="firebase-config-error" style="color:#ef4444;font-size:12px;margin-top:6px;min-height:18px;"></div>
-      </div>
-      <div style="padding:16px 24px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:flex-end;gap:12px;">
-        <button onclick="closeSyncModal()" style="padding:9px 16px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:transparent;color:#8888a0;font-size:13px;cursor:pointer;">Cancelar</button>
-        <button onclick="setupFirebase()" id="firebase-connect-btn" style="padding:9px 16px;border-radius:8px;border:none;background:linear-gradient(135deg,#6366f1,#a855f7);color:white;font-size:13px;font-weight:600;cursor:pointer;">🔥 Conectar Firebase</button>
-      </div>
-    </div>`;
-  modal.addEventListener('click', e => { if (e.target === modal) closeSyncModal(); });
-  document.body.appendChild(modal);
+  // Overlay — uses top/left/width/height for max browser compat (no inset)
+  const overlay = document.createElement('div');
+  overlay.id = 'sync-modal';
+  overlay.style.cssText = [
+    'position:fixed', 'top:0', 'left:0', 'width:100%', 'height:100%',
+    'background:rgba(0,0,0,0.85)', 'z-index:9999',
+    'display:flex', 'align-items:flex-start', 'justify-content:center',
+    'padding:20px', 'overflow-y:auto', 'box-sizing:border-box'
+  ].join(';');
+
+  // Card
+  const card = document.createElement('div');
+  card.style.cssText = [
+    'background:#111119', 'border:1px solid rgba(255,255,255,0.1)',
+    'border-radius:16px', 'width:100%', 'max-width:500px',
+    'margin-top:40px', 'box-shadow:0 20px 60px rgba(0,0,0,0.8)',
+    'font-family:Inter,sans-serif', 'color:#f0f0f5'
+  ].join(';');
+
+  // Steps HTML (plain string concat, no nested template literals)
+  const steps = [
+    ['1', 'Crear proyecto Firebase', 'Ve a <a href="https://console.firebase.google.com" target="_blank" style="color:#06b6d4">console.firebase.google.com</a> → Crear proyecto → Nombre: life-os → Crear'],
+    ['2', 'Activar Google Auth', 'Build → Authentication → Comenzar → Sign-in method → Google → Habilitar → Guardar'],
+    ['3', 'Crear Firestore', 'Build → Firestore Database → Crear base de datos → Modo de prueba → Habilitar'],
+    ['4', 'Obtener config', '⚙️ Configuración del proyecto → Tus apps → icono Web → Registrar app → copia el objeto firebaseConfig'],
+    ['5', 'Autorizar dominio', 'Authentication → Settings → Dominios autorizados → Agregar → clinicamedicageneral.github.io']
+  ];
+
+  let stepsHTML = '';
+  for (const [num, title, desc] of steps) {
+    stepsHTML += '<div style="display:flex;gap:10px;margin-bottom:12px;">'
+      + '<div style="min-width:20px;height:20px;border-radius:50%;background:#a855f7;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px;">' + num + '</div>'
+      + '<div style="font-size:12px;color:#8888a0;line-height:1.6;"><strong style="color:#f0f0f5;">' + title + '</strong><br>' + desc + '</div>'
+      + '</div>';
+  }
+
+  card.innerHTML = ''
+    + '<div style="padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center;">'
+    + '<span style="font-size:15px;font-weight:700;">☁️ Sincronización entre dispositivos</span>'
+    + '<button id="sync-modal-close" style="background:none;border:none;color:#888;font-size:20px;cursor:pointer;padding:0 4px;line-height:1;">×</button>'
+    + '</div>'
+    + '<div style="padding:18px 20px;">'
+    + '<p style="font-size:13px;color:#8888a0;margin-bottom:16px;">Sincroniza tu progreso entre celular y computadora gratis con Firebase.</p>'
+    + stepsHTML
+    + '<div style="margin-top:16px;">'
+    + '<div style="font-size:12px;color:#8888a0;margin-bottom:6px;">Pega aquí tu firebaseConfig:</div>'
+    + '<textarea id="firebase-config-input" rows="8" style="width:100%;background:#0a0a10;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#f0f0f5;padding:10px;font-size:11px;font-family:monospace;box-sizing:border-box;resize:vertical;" placeholder=\'const firebaseConfig = {\n  apiKey: "AIzaSy...",\n  authDomain: "...",\n  projectId: "..."\n};\'></textarea>'
+    + '<div id="firebase-config-error" style="color:#ef4444;font-size:12px;margin-top:4px;"></div>'
+    + '</div>'
+    + '</div>'
+    + '<div style="padding:14px 20px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:flex-end;gap:10px;">'
+    + '<button id="sync-modal-cancel" style="padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:transparent;color:#888;font-size:13px;cursor:pointer;">Cancelar</button>'
+    + '<button id="sync-modal-connect" style="padding:8px 16px;border-radius:8px;border:none;background:#6366f1;color:white;font-size:13px;font-weight:600;cursor:pointer;">🔥 Conectar Firebase</button>'
+    + '</div>';
+
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+
+  // Attach listeners AFTER appending (no onclick attributes)
+  document.getElementById('sync-modal-close').addEventListener('click', closeSyncModal);
+  document.getElementById('sync-modal-cancel').addEventListener('click', closeSyncModal);
+  document.getElementById('sync-modal-connect').addEventListener('click', setupFirebase);
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) closeSyncModal(); });
 }
 
 function closeSyncModal() {
