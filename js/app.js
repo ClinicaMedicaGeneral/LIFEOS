@@ -234,6 +234,28 @@ function renderDashboard() {
   const totalDebt = ModeEngine.getTotalDebt(APP);
   const quote = getDailyQuote();
 
+  // Sync status for dashboard
+  const syncBannerHTML = !Sync.configured
+    ? `<div id="dash-sync-banner" style="background:linear-gradient(135deg,rgba(168,85,247,0.1),rgba(99,102,241,0.1));border:1px solid rgba(168,85,247,0.25);border-radius:12px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:22px;">☁️</span>
+          <div>
+            <div style="font-weight:600;font-size:13px;color:#f0f0f5;">Activa la sincronización</div>
+            <div style="font-size:11px;color:#8888a0;margin-top:2px;">Mantén tu progreso igual en todos tus dispositivos</div>
+          </div>
+        </div>
+        <button id="dash-sync-btn" style="padding:8px 16px;border-radius:8px;border:none;background:linear-gradient(135deg,#a855f7,#6366f1);color:white;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">Activar Sync →</button>
+      </div>`
+    : Sync.user
+      ? `<div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:12px;padding:12px 18px;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+          <span style="color:#10b981;">✓</span>
+          <span style="font-size:12px;color:#8888a0;">Sincronizado como <strong style="color:#f0f0f5;">${Sync.user.displayName?.split(' ')[0]}</strong></span>
+        </div>`
+      : `<div id="dash-sync-login" style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);border-radius:12px;padding:12px 18px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <span style="font-size:12px;color:#8888a0;">Firebase configurado — inicia sesión para sincronizar</span>
+          <button id="dash-sync-login-btn" style="padding:7px 14px;border-radius:8px;border:none;background:#06b6d4;color:white;font-size:12px;font-weight:600;cursor:pointer;">Conectar Google →</button>
+        </div>`;
+
   container.innerHTML = `
     <div class="page-header">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
@@ -244,6 +266,8 @@ function renderDashboard() {
         <div class="mode-badge ${modeInfo.class}">${modeInfo.icon} ${modeInfo.label}</div>
       </div>
     </div>
+
+    ${syncBannerHTML}
 
     <div class="quote-banner animate-in">
       <div class="quote-text">${quote.text}</div>
@@ -342,6 +366,13 @@ function renderDashboard() {
   `;
 
   renderDashboardCharts(scores);
+
+  // Attach sync button listeners (no onclick attributes — pure addEventListener)
+  const dashSyncBtn = document.getElementById('dash-sync-btn');
+  if (dashSyncBtn) dashSyncBtn.addEventListener('click', () => showSyncModal());
+
+  const dashLoginBtn = document.getElementById('dash-sync-login-btn');
+  if (dashLoginBtn) dashLoginBtn.addEventListener('click', () => Sync.signIn());
 }
 
 function renderScoreCard(label, score, color) {
