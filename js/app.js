@@ -50,6 +50,13 @@ window.closeSyncModal = closeSyncModal;
 window.setupFirebase = setupFirebase;
 
 function showSyncModal() {
+  // ── Diagnostic: flash banner to confirm function was called ──
+  const diag = document.createElement('div');
+  diag.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#a855f7;color:white;padding:14px;z-index:99999;text-align:center;font-size:15px;font-weight:600;';
+  diag.textContent = '✅ Abriendo configuración de Sync...';
+  document.body.appendChild(diag);
+  setTimeout(() => diag.remove(), 2500);
+
   // Remove existing modal if any
   const existing = document.getElementById('sync-modal');
   if (existing) existing.remove();
@@ -367,12 +374,18 @@ function renderDashboard() {
 
   renderDashboardCharts(scores);
 
-  // Attach sync button listeners (no onclick attributes — pure addEventListener)
+  // Attach sync button listeners — both click AND touchstart for mobile
   const dashSyncBtn = document.getElementById('dash-sync-btn');
-  if (dashSyncBtn) dashSyncBtn.addEventListener('click', () => showSyncModal());
+  if (dashSyncBtn) {
+    dashSyncBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); showSyncModal(); });
+    dashSyncBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); showSyncModal(); }, { passive: false });
+  }
 
   const dashLoginBtn = document.getElementById('dash-sync-login-btn');
-  if (dashLoginBtn) dashLoginBtn.addEventListener('click', () => Sync.signIn());
+  if (dashLoginBtn) {
+    dashLoginBtn.addEventListener('click', (e) => { e.preventDefault(); Sync.signIn(); });
+    dashLoginBtn.addEventListener('touchstart', (e) => { e.preventDefault(); Sync.signIn(); }, { passive: false });
+  }
 }
 
 function renderScoreCard(label, score, color) {
