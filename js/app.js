@@ -747,7 +747,8 @@ function renderFinancial() {
         <div style="display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto;">
           ${APP.financial.extraFinancing.map(ef => {
             const remainingPayments = Math.max(0, ef.remaining - ef.paid);
-            const remainingTotal = ef.payment * remainingPayments;
+            // Use stored total minus paid installments (actual balance, no interest)
+            const remainingTotal = Math.max(0, ef.total - ef.paid * ef.payment);
             return `
               <div class="debt-card ${remainingPayments === 0 ? 'paid' : ''}">
                 <div class="debt-priority ${remainingPayments <= 4 ? 'low' : remainingPayments <= 8 ? 'medium' : 'high'}"></div>
