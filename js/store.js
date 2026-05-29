@@ -4,7 +4,7 @@
 
 const Store = {
   KEY: 'life-os-data',
-  VERSION: 8,
+  VERSION: 9,
 
   defaults() {
     const startDate = '2026-06-01';
@@ -147,8 +147,12 @@ const Store = {
     // Preserve user progress but merge in new structure
     const merged = JSON.parse(JSON.stringify(fresh));
 
-    // Keep profile progress
-    if (oldData.profile) Object.assign(merged.profile, oldData.profile);
+    // Keep name and mode but RESET xp/level (plan starts 01-Jun)
+    if (oldData.profile) {
+      merged.profile.name = oldData.profile.name || merged.profile.name;
+      merged.profile.mode = oldData.profile.mode || merged.profile.mode;
+      // xp and level intentionally reset to 0/1
+    }
     // Always use the latest startDate from defaults (plan date may change)
 
     // Keep financial progress but add missing entries
